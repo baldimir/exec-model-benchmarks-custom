@@ -40,6 +40,10 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
@@ -85,5 +89,21 @@ public class BuildKieBaseFromContainerBenchmark {
     @Benchmark
     public KieBase getKieBaseFromContainer() {
         return kieServices.newKieContainer(releaseId).newKieBase(kieBaseConfiguration);
+    }
+
+    /**
+     * Just for debugging purposes. For proper measurement, run the benchmarks jar from command line.
+     * To debug in IDE, simply run this main() method in a debug mode. All breakpoints in the code should work.
+     *
+     * @param args
+     * @throws RunnerException
+     */
+    public static void main(final String[] args) throws RunnerException {
+        final Options opt = new OptionsBuilder()
+                .include(BuildKieBaseFromContainerBenchmark.class.getSimpleName())
+                .forks(0)
+                .build();
+
+        new Runner(opt).run();
     }
 }
