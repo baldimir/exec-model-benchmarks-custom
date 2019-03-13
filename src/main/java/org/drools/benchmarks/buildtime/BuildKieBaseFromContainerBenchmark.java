@@ -16,6 +16,7 @@
 
 package org.drools.benchmarks.buildtime;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +45,7 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.util.FileUtils;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
@@ -75,6 +77,10 @@ public class BuildKieBaseFromContainerBenchmark {
                                                 .setResourceType(ResourceType.DRL)
                                                 .setSourcePath("drlFile.drl");
 
+        // You can write the kjar to your custom location by uncommenting this line and specifying your custom kjar path.
+//        final File kjarFile = new File("add-your-custom-path-here.jar");
+        final File kjarFile = FileUtils.tempFile("jar");
+
         // Uncomment to use testDrl.drl file. (and comment out the generated rules)
         // drlResource = KieServices.get().getResources()
         //                          .newClassPathResource("testDrl.drl")
@@ -82,8 +88,8 @@ public class BuildKieBaseFromContainerBenchmark {
         //                          .setSourcePath("drlFile.drl");
 
         // You can add more resources as parameters of this method call. E.g. it could be used as 
-        // return BuildtimeUtil.createKJarFromResources(useCanonicalModel, drlResource1, drlResource2, ...);
-        releaseId = BuildtimeUtil.createKJarFromResources(useCanonicalModel, drlResource);
+        // return BuildtimeUtil.createKJarFromResources(useCanonicalModel, kjarFile, drlResource1, drlResource2, ...);
+        releaseId = BuildtimeUtil.createKJarFromResources(useCanonicalModel, kjarFile, drlResource);
     }
 
     @Benchmark

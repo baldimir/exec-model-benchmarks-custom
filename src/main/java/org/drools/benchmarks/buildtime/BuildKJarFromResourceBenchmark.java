@@ -16,6 +16,7 @@
 
 package org.drools.benchmarks.buildtime;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +43,7 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.util.FileUtils;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.SingleShotTime)
@@ -77,9 +79,13 @@ public class BuildKJarFromResourceBenchmark {
 
     @Benchmark
     public ReleaseId createKJarFromResource() throws IOException {
+        // You can write the kjar to your custom location by uncommenting this line and specifying your custom kjar path.
+//        final File kjarFile = new File("add-your-custom-path-here.jar");
+        final File kjarFile = FileUtils.tempFile("jar");
+
         // You can add more resources as parameters of this method call. E.g. it could be used as 
         // return BuildtimeUtil.createKJarFromResources(useCanonicalModel, drlResource1, drlResource2, ...);
-        return BuildtimeUtil.createKJarFromResources(useCanonicalModel, drlResource);
+        return BuildtimeUtil.createKJarFromResources(useCanonicalModel, kjarFile, drlResource);
     }
 
     /**

@@ -41,7 +41,6 @@ import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.internal.utils.KieHelper;
-import org.openjdk.jmh.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,25 +48,26 @@ public final class BuildtimeUtil {
 
     private static Logger logger = LoggerFactory.getLogger(BuildtimeUtil.class);
 
-    public static KieContainer createKieContainerFromResources(final boolean useCanonicalModel,
+    public static KieContainer createKieContainerFromResources(final File kjarFile,
+                                                               final boolean useCanonicalModel,
                                                                final Resource... resources) throws IOException {
-        final ReleaseId kJarReleaseId = createKJarFromResources(useCanonicalModel, resources);
+        final ReleaseId kJarReleaseId = createKJarFromResources(useCanonicalModel, kjarFile, resources);
         return KieServices.get().newKieContainer(kJarReleaseId);
     }
 
-    public static ReleaseId createKJarFromResources(final boolean useCanonicalModel, final Resource... resources)
+    public static ReleaseId createKJarFromResources(final boolean useCanonicalModel, final File kjarFile, final Resource... resources)
             throws IOException {
         final KieServices kieServices = KieServices.get();
         final KieBuilder kieBuilder = getKieBuilderFromResources(kieServices.newKieFileSystem(), useCanonicalModel, resources);
-        generateKJarFromKieBuilder(kieBuilder, useCanonicalModel);
+        generateKJarFromKieBuilder(kieBuilder, useCanonicalModel, kjarFile);
         return kieBuilder.getKieModule().getReleaseId();
     }
 
-    private static void generateKJarFromKieBuilder(final KieBuilder kieBuilder, final boolean useCanonicalModel)
+    private static void generateKJarFromKieBuilder(final KieBuilder kieBuilder, final boolean useCanonicalModel, final File kjarFile)
             throws IOException {
         final ReleaseId releaseId = kieBuilder.getKieModule().getReleaseId();
         final InternalKieModule kieModule = (InternalKieModule) kieBuilder.getKieModule();
-        final File kjarFile = bytesToTempFile(releaseId, kieModule.getBytes(), ".jar");
+        bytesToFile(kieModule.getBytes(), kjarFile);
         final KieModule zipKieModule;
         if (useCanonicalModel) {
             zipKieModule = new CanonicalKieModule(releaseId, kieModule.getKieModuleModel(), kjarFile);
@@ -146,13 +146,11 @@ public final class BuildtimeUtil {
         return kieBaseConfiguration;
     }
 
-    private static File bytesToTempFile(final ReleaseId releaseId, final byte[] bytes, final String extension)
+    private static void bytesToFile(final byte[] bytes, final File tempFile)
             throws IOException {
-        final File file = FileUtils.tempFile(extension);
-        try (final FileOutputStream fos = new FileOutputStream(file, false)) {
+        try (final FileOutputStream fos = new FileOutputStream(tempFile, false)) {
             fos.write(bytes);
         }
-        return file;
     }
 
     private static void dumpReteIfNeeded(final KieBase kieBase) {
